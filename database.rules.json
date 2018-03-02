@@ -1,0 +1,78 @@
+{
+  "rules": {
+    "messages": {
+      ".read": true,
+      ".write": true
+    },
+    "resources": {
+      ".read": true,
+      ".write": false
+    },
+    "administrators": {
+      "$uid": {
+        ".read": false,
+        ".write": false
+      }
+    },
+    "reporters": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": false,
+        "reports": {
+          "$report_id": {
+            ".validate": "newData.isBoolean()"
+          }
+        }
+      }
+    },
+    "approved_reports": {
+      ".write": false,
+      ".read": "auth != null",
+      "$report_id": {
+        "body": {
+          ".validate": "newData.isString()"
+        },
+        "title": {
+          ".validate": "newData.isString() && newData.val().length < 100"
+        },
+        "timestamp": {
+          ".validate": "newData.isNumber() && newData.val() > 0"
+        },
+        "location": {
+          ".validate": "newData.isString()"
+        }
+      }
+    },
+    "unapproved_reports": {
+      "$report_id": {
+        ".write": "auth != null",
+        ".read": false,
+        "uid": {
+          ".validate": "auth != null && auth.uid == newData.val() && root.child('users/' + newData.val() + '/').exists()",
+        },
+        "body": {
+          ".validate": "newData.isString()"
+        },
+        "title": {
+          ".validate": "newData.isString() && newData.val().length < 100"
+        },
+        "timestamp": {
+          ".validate": "newData.isNumber() && newData.val() > 0"
+        },
+        "locationLabel": {
+          ".validate": "newData.isString()"
+        },
+        "locationLat": {
+          ".validate": "newData.isNumber()"
+        },
+        "locationLong": {
+          ".validate": "newData.isNumber()"
+        }
+      }
+    },
+    "report_locations": {
+        ".read": "auth != null",
+        ".write": false
+    }
+  }
+}

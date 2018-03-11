@@ -1,0 +1,7 @@
+service cloud.firestore {
+  match /databases/{database}/documents {
+      match /reports/{report} {
+       allow read: if request.auth.uid != null;
+    }
+  }
+}

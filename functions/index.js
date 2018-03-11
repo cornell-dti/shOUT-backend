@@ -23,7 +23,7 @@ exports.initializeUser = functions.auth.user().onCreate(event => {
 
 exports.approveReport = functions.database.ref('unapproved_reports/{reportId}').onWrite(event => {
     const reportId = event.params.reportId;
-   
+
     const report = event.data.val();
 
     console.log('report: ' + report.toString());
@@ -35,8 +35,8 @@ exports.approveReport = functions.database.ref('unapproved_reports/{reportId}').
     const locationLabel = report.locationLabel;
     const latitude = report.locationLat; // todo create location { lat, long, name format}
     const longitude = report.locationLong;
-    
 
+    const db = admin.firestore();
     const database = admin.database();
 
     let updates = {};
@@ -48,22 +48,28 @@ exports.approveReport = functions.database.ref('unapproved_reports/{reportId}').
         console.log('WARNING: failed to update report list for user: ' + error);
     });
 
-    // Initialize user.
-    database.ref('approved_reports/' + reportId).set({
-       uid: userId,
-       body: body,
-       has_body: (body != null && body != ''),
-       title: title,
-       timestamp: timestamp,
-       location: locationLabel
+    const reportsRef = db.collection("reports");
+
+    let hasBody = (body != null && body != '');
+
+    let document = reportsRef.doc(reportId).set({
+        uid: userId,
+        body: body,
+        hasbody: hasBody,
+        title: title,
+        timestamp: timestamp,
+        location: locationLabel
     });
+
+    // Initialize user.
+    // database.ref('approved_reports/' + reportId).set();
 
     const geoFire = new GeoFire(admin.database().ref('/report_locations/'));
 
     let location = [latitude, longitude];
 
     geoFire.set(reportId, location).then(() => {
-       console.log('set ' + location + ' for ' + reportId);
+        console.log('set ' + location + ' for ' + reportId);
     }).catch((error) => {
         console.log('ERROR: ' + error);
     });

@@ -52,6 +52,7 @@ exports.approveReport = functions.database.ref('unapproved_reports/{reportId}').
     database.ref('approved_reports/' + reportId).set({
        uid: userId,
        body: body,
+       has_body: (body != null && body != ''),
        title: title,
        timestamp: timestamp,
        location: locationLabel

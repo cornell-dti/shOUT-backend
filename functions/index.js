@@ -36,40 +36,50 @@ exports.approveReport = functions.database.ref('unapproved_reports/{reportId}').
     const latitude = report.locationLat; // todo create location { lat, long, name format}
     const longitude = report.locationLong;
 
+    console.log('report details: ' + JSON.toString(report));
+
     const db = admin.firestore();
     const database = admin.database();
+
+    console.log("fetching fire store....");
 
     let updates = {};
     updates['/users/' + userId + '/reports/' + reportId + '/'] = true;
 
-    database.ref().update(updates).then(() => {
-        console.log('set valid ' + ' for ' + reportId + ' of ' + userId + ' to false.')
-    }).catch((error) => {
-        console.log('WARNING: failed to update report list for user: ' + error);
-    });
-
-    const reportsRef = db.collection("reports");
-
-    let hasBody = (body != null && body != '');
-
-    let document = reportsRef.doc(reportId).set({
-        uid: userId,
-        body: body,
-        hasbody: hasBody,
-        title: title,
-        timestamp: timestamp,
-        location: locationLabel
-    });
+    console.log("updates: " + JSON.toString(updates));
 
     // Initialize user.
     // database.ref('approved_reports/' + reportId).set();
 
     const geoFire = new GeoFire(admin.database().ref('/report_locations/'));
 
-    let location = [latitude, longitude];
+    const reportsRef = db.collection("reports");
 
-    geoFire.set(reportId, location).then(() => {
-        console.log('set ' + location + ' for ' + reportId);
+    let hasBody = (body != null && body != '');
+
+    return reportsRef.doc(reportId).set({
+        uid: userId,
+        body: body,
+        hasbody: hasBody,
+        title: title,
+        timestamp: timestamp,
+        location: locationLabel
+    }).then(() => {
+        console.log('added report: ' + reportId);
+        
+        database.ref().update(updates).then(() => {
+            console.log('set valid ' + ' for ' + reportId + ' of ' + userId + ' to false.');
+
+            let location = [latitude, longitude];
+
+            geoFire.set(reportId, location).then(() => {
+                console.log('set ' + location + ' for ' + reportId);
+            }).catch((error) => {
+                console.log('ERROR SETING REPORT LOCATION: ' + error);
+            });
+        }).catch((error) => {
+            console.log('WARNING: failed to update report list for user: ' + error);
+        });
     }).catch((error) => {
         console.log('ERROR: ' + error);
     });

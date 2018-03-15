@@ -1,19 +1,39 @@
 # shOUT Backend
-## The definitive development guide.
+#### The development guide.
+  
+  
+Contents:
+<!-- TOC -->
 
-### Components
+- [shOUT Backend](#shout-backend)
+            - [The development guide.](#the-development-guide)
+    - [Components](#components)
+    - [Realtime Database](#realtime-database)
+        - [Unapproved Reports](#unapproved-reports)
+        - [Report Locations](#report-locations)
+        - [Unique Report IDs](#unique-report-ids)
+    - [Firestore](#firestore)
+        - [Approved Reports](#approved-reports)
+        - [Resources](#resources)
+
+<!-- /TOC -->
+  
+
+  
+## Components
 
 The shOUT backend utilizes two “databases” because each provides vital functionalities that the other lacks.
 
 [Realtime Database](#realtime-database) This is the Firebase database solution that developers have traditionally utilized in the past. We use it for two primary needs. It is used in conjunction with Geofire to provide location queries (allowing us to look up reports by location/radius) and it is used for clients (Android/iOS) to push “unapproved reports” to. See [Unapproved Reports](#unapproved-reports) for detailed information.
 
 [Firestore](#firestore) This is the next generation Firebase database solution and the successor to Firebase Realtime Database. We utilize Firestore to store “approved reports” (reports that have received moderation and should be seen by any app user). It is used because it provides advanced filtering and query systems that allow us to quickly and efficiently retrieve the most recent reports and the most recent reports that have bodies (making them stories).
-
-### Realtime Database
+  
+  
+## Realtime Database
 
 The realtime database is used for two primary purposes: unapproved reports and report locations.
 
-#### Unapproved Reports
+### Unapproved Reports
 
 Unapproved reports are reports that are pushed to the backend but have received no moderator approval (NOTE: In the development stages of shOUT all reports with valid details are accepted by an "auto moderator" function).
 
@@ -50,8 +70,9 @@ Below is a description of each key, its value, and the value requirements.
 |body | string | This is the body/details of the report. This is optional and not restricted by length”
 
 Unapproved reports can be created by any client but can only be read and modified after creation by the backend.
+  
 
-#### Report Locations
+### Report Locations
 
 We also utilize the Realtime Database to store report locations. This is done with the [Geofire API](https://github.com/firebase/geoFire). Report locations can be found under the root child `report_locations`. These should only be accessed be a Geofire API. Each report location follows the format...
 
@@ -109,8 +130,8 @@ geoQuery.addGeoQueryEventListener(() -> {
 };
 ```
 NOTE: You should never attempt to query the entire database at once. Always calculate the visible map radius with padding and then update the query as needed.
-
-#### Unique Report IDs
+  
+### Unique Report IDs
 
 To generate a unique report simply push empty data to the Realtime Database root child `unapproved_reports` and it will return a new, unique key.
 
@@ -122,12 +143,12 @@ String reportId = FirebaseDatabase.getInstance().getReference("unapproved_report
 ```
 
 We use a unique key from the `unapproved reports` database as no report should ***ever*** be deleted from here and thus it is the safest database to ensure every report id is unique. *NOTE: This solution may be altered in the future.*
-
-### Firestore
+  
+## Firestore
 
 The Firestore is used for approved reports and resources storage (resources currently reside in the Realtime Database but are being relocated).
-
-#### Approved Reports
+  
+### Approved Reports
 
 An approved reports is always stored under the collection `reports` with the document id identical to its [unique report id](#unique-report-ids) from the Realtime Database. This is done to easy the translation between the Realtime Databse and Firestore (specifically for geoqueries).
 
@@ -152,8 +173,8 @@ A summary of each key and value is available below.
 |uid | string | This is the unique id of the user who generates the report. *NOTE: This field is not accessible to clients for security and privacy reasons.*”
 |hasbody | boolean | This is a simple boolean flag for indexing. It indicates if the body of the report is empty.
 |body | string |  This is the body/details of the report. This is optional and not restricted by length”
-
-#### Resources
+  
+### Resources
 
 Resources are stored in the Firestore in the collection `resources` with arbitrary document ids corresponding *somewhat* to the resource's name (*NOTE: The keys should not be used as titles however*). An example may be the Women's Center with the key `womens-center`.
 
